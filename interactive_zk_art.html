@@ -8,11 +8,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <!-- Include jsSHA library for cryptographic hashing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.4.2/sha256.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet"> <!-- Sleek font -->
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif; /* Use sleek font */
             background-color: #FAF8F5;
             overflow: hidden;
         }
@@ -26,9 +27,20 @@
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow for depth */
         }
         .button:hover {
             background-color: #666;
+        }
+        .hashText {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            color: black; /* Change text color to black */
+            text-align: center;
+            opacity: 0.8; /* Slight transparency for a sleek look */
         }
     </style>
 </head>
@@ -36,14 +48,14 @@
     <button class="button" id="proveButton" style="top: 20px; left: 20px;">Prove without Revealing</button>
     <button class="button" id="resetButton" style="top: 60px; left: 20px;">Reset</button>
 
+    <div class="hashText" id="hashText" style="display: none;"></div>
+
     <script>
         let drawing = [];
         let proofFragments = [];
         let proving = false;
         let cryptographicHash = "";
-        let showHash = false;
         let blocks = [];
-        let pressure = false; // Variable to detect pressure sensitivity
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
@@ -63,8 +75,8 @@
             background(250, 250, 245, 50); // Light background for smooth visuals
 
             if (!proving) {
-                // Drawing the user's input with smoother lines
-                stroke(20, 50, 180, 180);
+                // Drawing the user's input with hot pink ink
+                stroke(255, 20, 147); // Hot pink color
                 strokeWeight(4); // Thicker stroke for better visibility
                 noFill();
                 beginShape();
@@ -79,11 +91,6 @@
                     ellipse(proofFragments[i].x, proofFragments[i].y, proofFragments[i].size);
                     proofFragments[i].move();
                 }
-            }
-
-            if (showHash) {
-                fill(30);
-                text(`Cryptographic Hash: ${cryptographicHash}`, width / 2, height - 50);
             }
 
             // Displaying the blockchain blocks visually
@@ -111,7 +118,7 @@
 
             proving = true;
             proofFragments = [];
-            showHash = true;
+            cryptographicHash = "";
 
             // Generate a cryptographic hash of the drawing's coordinates
             let shaObj = new jsSHA("SHA-256", "TEXT");
@@ -152,6 +159,9 @@
             }
 
             // Display the hash after proof is generated
+            document.getElementById('hashText').innerText = "Cryptographic Hash: " + cryptographicHash;
+            document.getElementById('hashText').style.display = 'block';
+
             setTimeout(() => {
                 alert("Your proof is ready! Hash: " + cryptographicHash);
             }, 1000);
@@ -162,7 +172,7 @@
             drawing = [];
             proofFragments = [];
             blocks = [];
-            showHash = false;
+            document.getElementById('hashText').style.display = 'none'; // Hide hash text
             background(250, 250, 245);
         }
 
