@@ -44,6 +44,7 @@
             border-radius: 5px; /* Rounded corners */
             background-color: white; /* Normal background */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            display: none; /* Hide by default */
         }
     </style>
 </head>
@@ -51,7 +52,7 @@
     <button class="button" id="proveButton" style="top: 20px; left: 20px;">Prove without Revealing</button>
     <button class="button" id="resetButton" style="top: 60px; left: 20px;">Reset</button>
 
-    <div class="hashText" id="hashText" style="display: none;"></div>
+    <div class="hashText" id="hashText"></div> <!-- Removed initial display -->
 
     <script>
         let drawing = [];
@@ -106,7 +107,7 @@
             // Show the hash text if generated
             if (cryptographicHash) {
                 document.getElementById('hashText').innerText = "Cryptographic Hash: " + cryptographicHash;
-                document.getElementById('hashText').style.display = 'block';
+                document.getElementById('hashText').style.display = 'block'; // Show hash text
             }
         }
 
@@ -172,7 +173,7 @@
                 proofFragments.push(fragment);
             }
 
-            // Notify the user without elfgmi.github text
+            // Notify the user without extra text
             setTimeout(() => {
                 alert("Your proof is ready! Hash: " + cryptographicHash);
             }, 1000);
@@ -184,6 +185,7 @@
             proofFragments = [];
             blocks = [];
             cryptographicHash = ""; // Reset the hash
+            document.getElementById('hashText').innerText = ""; // Clear hash text
             document.getElementById('hashText').style.display = 'none'; // Hide hash text
             background(250, 250, 245);
         }
