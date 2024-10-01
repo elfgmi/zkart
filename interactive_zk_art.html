@@ -15,37 +15,41 @@
             background-color: #FAF8F5;
             overflow: hidden;
         }
-        .button {
-            position: absolute;
-            padding: 10px 20px;
-            background-color: #444;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        .button:hover {
-            background-color: #666;
-        }
-        .hashText {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 16px;
-            color: black;
-            text-align: center;
-            opacity: 0.8;
-            padding: 10px;
-            border: 1px solid #FFC0CB; /* Light pink border */
-            border-radius: 5px; /* Rounded corners */
-            background-color: white; /* Normal background */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-            display: none; /* Hide by default */
-        }
+.button {
+    position: absolute;
+    padding: 12px 24px;
+    background-color: #ff6f61; /* Soft coral background */
+    color: #fff; /* White text */
+    border: none;
+    border-radius: 8px; /* More rounded corners for elegance */
+    cursor: pointer;
+    font-size: 18px; /* Slightly larger font */
+    transition: background-color 0.3s, transform 0.2s; /* Added transform for button effect */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Enhanced shadow */
+}
+
+.button:hover {
+    background-color: #ff4c3b; /* Darker coral on hover */
+    transform: translateY(-2px); /* Lift effect on hover */
+}
+
+.hashText {
+    position: absolute;
+    bottom: 20px; /* Maintain position at the bottom */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 16px; /* Keep font size consistent */
+    color: black; /* Simple black text */
+    text-align: center;
+    opacity: 0.9; /* Slightly more opaque */
+    padding: 8px; /* Adjust padding for better spacing */
+    border: none; /* Removed border */
+    border-radius: 5px; /* Rounded corners */
+    background-color: white; /* White background */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    display: none; /* Hide by default */
+    z-index: 10; /* Ensure it appears above other elements */
+}
     </style>
 </head>
 <body>
