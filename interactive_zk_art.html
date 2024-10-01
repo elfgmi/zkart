@@ -96,43 +96,35 @@
         }
 
         function mouseDragged() {
-            if (!proving) {
-                // Capture drawing with stylus input
-                drawing.push(createVector(mouseX, mouseY));
-            }
-        }
-
-        function mouseReleased() {
-            if (!proving && drawing.length > 0) {
-                drawing.push(createVector(mouseX, mouseY));
-            }
+            // Store the current mouse position while dragging
+            drawing.push(createVector(mouseX, mouseY));
         }
 
         function drawCurves(points) {
             if (points.length < 2) return;
 
             beginShape();
-            for (let i = 0; i < points.length - 1; i++) {
-                let p0 = points[i];
-                let p1 = points[i + 1];
-                let midX = (p0.x + p1.x) / 2;
-                let midY = (p0.y + p1.y) / 2;
-
-                // Control points for a smooth curve
-                let controlX = (p0.x + midX) / 2;
-                let controlY = (p0.y + midY) / 2;
-                
-                curveVertex(controlX, controlY); // First control point
-                curveVertex(p0.x, p0.y);         // Start point
+            for (let i = 0; i < points.length; i++) {
+                vertex(points[i].x, points[i].y);
             }
-            // Ensure the last point is added
-            curveVertex(points[points.length - 1].x, points[points.length - 1].y);
             endShape();
         }
 
-        // Function to generate a visual proof without revealing the actual drawing
+        function resetCanvas() {
+            drawing = [];
+            proofFragments = [];
+            proving = false;
+            cryptographicHash = "";
+            blocks = [];
+            document.getElementById('hashText').style.display = 'none';
+            background(250, 250, 245);
+        }
+
         function generateProof() {
-            if (drawing.length === 0) return;
+            if (drawing.length === 0) {
+                alert("Please draw something before generating proof.");
+                return;
+            }
 
             proving = true;
             proofFragments = [];
@@ -142,6 +134,12 @@
             let shaObj = new jsSHA("SHA-256", "TEXT");
             shaObj.update(JSON.stringify(drawing));
             cryptographicHash = shaObj.getHash("HEX");
+
+            // Check if the hash was generated
+            if (!cryptographicHash) {
+                alert("Hash generation failed.");
+                return;
+            }
 
             // Create a new block in the blockchain
             let newBlock = {
@@ -157,7 +155,15 @@
                     text(`Hash: ${this.hash.substring(0, 8)}`, this.x + 60, this.y + 25);
                 }
             };
+
+            // Add the new block to the blocks array
             blocks.push(newBlock);
+
+            // Check if the block was created and added
+            if (blocks.length === 0 || blocks[blocks.length - 1].hash !== cryptographicHash) {
+                alert("Block creation failed.");
+                return;
+            }
 
             // Generate proof fragments for visual representation
             let numFragments = 150;
@@ -180,22 +186,10 @@
             document.getElementById('hashText').innerText = "Cryptographic Hash: " + cryptographicHash;
             document.getElementById('hashText').style.display = 'block';
 
+            // Alert to indicate the proof is ready
             setTimeout(() => {
                 alert("Your proof is ready! Hash: " + cryptographicHash);
             }, 1000);
-        }
-
-        function resetCanvas() {
-            proving = false;
-            drawing = [];
-            proofFragments = [];
-            blocks = [];
-            document.getElementById('hashText').style.display = 'none'; // Hide hash text
-            background(250, 250, 245);
-        }
-
-        function windowResized() {
-            resizeCanvas(windowWidth, windowHeight);
         }
     </script>
 </body>
