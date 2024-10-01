@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive zk-SNARK Art</title>
+    <!-- Include p5.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <!-- Include jsSHA library for cryptographic hashing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.4.2/sha256.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #FAF8F5;
+            overflow: hidden;
+        }
+        .button {
+            position: absolute;
+            padding: 10px 20px;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <button class="button" id="proveButton" style="top: 20px; left: 20px;">Prove without Revealing</button>
+    <button class="button" id="resetButton" style="top: 60px; left: 20px;">Reset</button>
+
+    <script>
+        let drawing = [];
+        let proofFragments = [];
+        let proving = false;
+        let cryptographicHash = "";
+        let showHash = false;
+        let blocks = [];
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            background(250, 250, 245);
+
+            // Event listeners for buttons
+            document.getElementById('proveButton').addEventListener('click', generateProof);
+            document.getElementById('resetButton').addEventListener('click', resetCanvas);
+
+            textAlign(CENTER);
+            textSize(14);
+            fill(50);
+        }
+
+        function draw() {
+            background(250, 250, 245, 50); // Light background for smooth visuals
+
+            if (!proving) {
+                // Drawing the user's input with lines
+                stroke(20, 50, 180, 180);
+                strokeWeight(2);
+                noFill();
+                beginShape();
+                for (let i = 0; i < drawing.length; i++) {
+                    vertex(drawing[i].x, drawing[i].y);
+                }
+                endShape();
+            } else {
+                // Showing proof fragments (abstract proof representation)
+                for (let i = 0; i < proofFragments.length; i++) {
+                    fill(proofFragments[i].color);
+                    ellipse(proofFragments[i].x, proofFragments[i].y, proofFragments[i].size);
+                    proofFragments[i].move();
+                }
+            }
+
+            if (showHash) {
+                fill(30);
+                text(`Cryptographic Hash: ${cryptographicHash}`, width / 2, height - 50);
+            }
+
+            // Displaying the blockchain blocks visually
+            for (let i = 0; i < blocks.length; i++) {
+                blocks[i].show();
+            }
+        }
+
+        function mouseDragged() {
+            if (!proving) {
+                drawing.push(createVector(mouseX, mouseY));
+            }
+        }
+
+        function mouseReleased() {
+            if (!proving && drawing.length > 0) {
+                drawing.push(createVector(mouseX, mouseY));
+            }
+        }
+
+        // Function to generate a visual proof without revealing the actual drawing
+        function generateProof() {
+            if (drawing.length === 0) return;
+
+            proving = true;
+            proofFragments = [];
+            showHash = true;
+
+            // Generate a cryptographic hash of the drawing's coordinates
+            let shaObj = new jsSHA("SHA-256", "TEXT");
+            shaObj.update(JSON.stringify(drawing));
+            cryptographicHash = shaObj.getHash("HEX");
+
+            // Create a new block in the blockchain
+            let newBlock = {
+                hash: cryptographicHash,
+                prevHash: blocks.length > 0 ? blocks[blocks.length - 1].hash : "Genesis Block",
+                x: 200 + blocks.length * 150,
+                y: height / 2,
+                color: color(random(100, 255), random(100, 255), random(100, 255)),
+                show: function () {
+                    fill(this.color);
+                    rect(this.x, this.y, 120, 50);
+                    fill(0);
+                    text(`Hash: ${this.hash.substring(0, 8)}`, this.x + 60, this.y + 25);
+                }
+            };
+            blocks.push(newBlock);
+
+            // Generate proof fragments for visual representation
+            let numFragments = 150;
+            for (let i = 0; i < numFragments; i++) {
+                let index = int(random(drawing.length));
+                let fragment = {
+                    x: drawing[index].x + random(-20, 20),
+                    y: drawing[index].y + random(-20, 20),
+                    size: random(10, 50),
+                    color: color(random(100, 255), random(100, 255), random(100, 255), 150),
+                    move: function () {
+                        this.x += random(-1, 1);
+                        this.y += random(-1, 1);
+                    }
+                };
+                proofFragments.push(fragment);
+            }
+
+            // Display the hash after proof is generated
+            setTimeout(() => {
+                alert("Your proof is ready! Hash: " + cryptographicHash);
+            }, 1000);
+        }
+
+        function resetCanvas() {
+            proving = false;
+            drawing = [];
+            proofFragments = [];
+            blocks = [];
+            showHash = false;
+            background(250, 250, 245);
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+    </script>
+</body>
+</html>
