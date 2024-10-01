@@ -39,6 +39,11 @@
             color: black;
             text-align: center;
             opacity: 0.8;
+            padding: 10px;
+            border: 1px solid #FFC0CB; /* Light pink border */
+            border-radius: 5px; /* Rounded corners */
+            background-color: white; /* Normal background */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
         }
     </style>
 </head>
@@ -86,12 +91,14 @@
                 // Showing proof fragments (abstract proof representation)
                 for (let i = 0; i < proofFragments.length; i++) {
                     fill(proofFragments[i].color);
+                    stroke(255, 20, 147); // Hot pink outline for shimmer effect
+                    strokeWeight(1); // Thinner outline for shimmer
                     ellipse(proofFragments[i].x, proofFragments[i].y, proofFragments[i].size);
                     proofFragments[i].move();
                 }
             }
 
-            // Displaying the blockchain blocks visually
+            // Showing the blockchain blocks visually
             for (let i = 0; i < blocks.length; i++) {
                 blocks[i].show();
             }
@@ -165,7 +172,7 @@
                 proofFragments.push(fragment);
             }
 
-            // Notify the user
+            // Notify the user without elfgmi.github text
             setTimeout(() => {
                 alert("Your proof is ready! Hash: " + cryptographicHash);
             }, 1000);
