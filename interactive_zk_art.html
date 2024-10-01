@@ -79,11 +79,7 @@
                 stroke(255, 20, 147); // Hot pink color
                 strokeWeight(4); // Thicker stroke for better visibility
                 noFill();
-                beginShape();
-                for (let i = 0; i < drawing.length; i++) {
-                    vertex(drawing[i].x, drawing[i].y);
-                }
-                endShape();
+                drawCurves(drawing);
             } else {
                 // Showing proof fragments (abstract proof representation)
                 for (let i = 0; i < proofFragments.length; i++) {
@@ -110,6 +106,28 @@
             if (!proving && drawing.length > 0) {
                 drawing.push(createVector(mouseX, mouseY));
             }
+        }
+
+        function drawCurves(points) {
+            if (points.length < 2) return;
+
+            beginShape();
+            for (let i = 0; i < points.length - 1; i++) {
+                let p0 = points[i];
+                let p1 = points[i + 1];
+                let midX = (p0.x + p1.x) / 2;
+                let midY = (p0.y + p1.y) / 2;
+
+                // Control points for a smooth curve
+                let controlX = (p0.x + midX) / 2;
+                let controlY = (p0.y + midY) / 2;
+                
+                curveVertex(controlX, controlY); // First control point
+                curveVertex(p0.x, p0.y);         // Start point
+            }
+            // Ensure the last point is added
+            curveVertex(points[points.length - 1].x, points[points.length - 1].y);
+            endShape();
         }
 
         // Function to generate a visual proof without revealing the actual drawing
