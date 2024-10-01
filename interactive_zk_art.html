@@ -25,6 +25,10 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #666;
         }
     </style>
 </head>
@@ -39,10 +43,12 @@
         let cryptographicHash = "";
         let showHash = false;
         let blocks = [];
+        let pressure = false; // Variable to detect pressure sensitivity
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
             background(250, 250, 245);
+            smooth(); // Enable anti-aliasing for smoother lines
 
             // Event listeners for buttons
             document.getElementById('proveButton').addEventListener('click', generateProof);
@@ -57,9 +63,9 @@
             background(250, 250, 245, 50); // Light background for smooth visuals
 
             if (!proving) {
-                // Drawing the user's input with lines
+                // Drawing the user's input with smoother lines
                 stroke(20, 50, 180, 180);
-                strokeWeight(2);
+                strokeWeight(4); // Thicker stroke for better visibility
                 noFill();
                 beginShape();
                 for (let i = 0; i < drawing.length; i++) {
@@ -88,6 +94,7 @@
 
         function mouseDragged() {
             if (!proving) {
+                // Capture drawing with stylus input
                 drawing.push(createVector(mouseX, mouseY));
             }
         }
