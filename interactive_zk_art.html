@@ -43,14 +43,14 @@
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
-            let button = createButton('Prove');
-            button.class('button');
-            button.mousePressed(generateProof);
-            button.position(20, 20);
+            let proveButton = createButton('Prove');
+            proveButton.class('button');
+            proveButton.mousePressed(generateProof);
+            proveButton.position(20, 20);
             let clearButton = createButton('Clear');
             clearButton.class('button');
             clearButton.mousePressed(clearCanvas);
-            clearButton.position(100, 20);
+            clearButton.position(20, 60); // Adjusted to prevent overlap
         }
 
         function draw() {
