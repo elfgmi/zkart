@@ -3,195 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive zk-SNARK Art</title>
+    <title>Interactive Art Piece</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.4.2/sha256.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
     <style>
         body {
             margin: 0;
-            padding: 0;
-            font-family: 'Roboto', sans-serif;
-            background-color: #FAF8F5;
             overflow: hidden;
+            background: #e0f7fa; /* Light background */
         }
-.button {
-    position: absolute;
-    padding: 12px 24px;
-    background-color: #ff6f61; /* Soft coral background */
-    color: #fff; /* White text */
-    border: none;
-    border-radius: 8px; /* More rounded corners for elegance */
-    cursor: pointer;
-    font-size: 18px; /* Slightly larger font */
-    transition: background-color 0.3s, transform 0.2s; /* Added transform for button effect */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Enhanced shadow */
-}
 
-.button:hover {
-    background-color: #ff4c3b; /* Darker coral on hover */
-    transform: translateY(-2px); /* Lift effect on hover */
-}
+        .button {
+            position: absolute;
+            padding: 12px 24px;
+            background-color: transparent; /* Clear background */
+            color: black; /* Black text */
+            border: 1px solid black; /* Thin black outline */
+            border-radius: 8px; /* More rounded corners for elegance */
+            cursor: pointer;
+            font-size: 18px; /* Slightly larger font */
+            transition: background-color 0.3s, transform 0.2s; /* Added transform for button effect */
+            z-index: 10; /* Ensure it appears above other elements */
+        }
 
-.hashText {
-    position: absolute;
-    bottom: 20px; /* Maintain position at the bottom */
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 16px; /* Keep font size consistent */
-    color: black; /* Simple black text */
-    text-align: center;
-    opacity: 0.9; /* Slightly more opaque */
-    padding: 8px; /* Adjust padding for better spacing */
-    border: none; /* Removed border */
-    border-radius: 5px; /* Rounded corners */
-    background-color: white; /* White background */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    display: none; /* Hide by default */
-    z-index: 10; /* Ensure it appears above other elements */
-}
+        .button:hover {
+            background-color: rgba(0, 0, 0, 0.1); /* Light grey background on hover */
+            transform: translateY(-2px); /* Lift effect on hover */
+        }
     </style>
 </head>
 <body>
-    <button class="button" id="proveButton" style="top: 20px; left: 20px;">Prove without Revealing</button>
-    <button class="button" id="resetButton" style="top: 60px; left: 20px;">Reset</button>
-
-    <div class="hashText" id="hashText"></div> <!-- Removed initial display -->
-
     <script>
         let drawing = [];
-        let proofFragments = [];
-        let proving = false;
-        let cryptographicHash = "";
-        let blocks = [];
+        let currentPath = [];
+        let bubbles = [];
+        let isDrawing = false;
+        let hashOutput = "";
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
-            background(250, 250, 245);
-            smooth(); // Enable anti-aliasing for smoother lines
-
-            // Event listeners for buttons
-            document.getElementById('proveButton').addEventListener('click', generateProof);
-            document.getElementById('resetButton').addEventListener('click', resetCanvas);
-
-            textAlign(CENTER);
-            textSize(14);
-            fill(50);
+            let button = createButton('Prove');
+            button.class('button');
+            button.mousePressed(generateProof);
+            button.position(20, 20);
+            let clearButton = createButton('Clear');
+            clearButton.class('button');
+            clearButton.mousePressed(clearCanvas);
+            clearButton.position(100, 20);
         }
 
         function draw() {
-            background(250, 250, 245, 50); // Light background for smooth visuals
+            background(224, 247, 251); // Light background
+            drawPaths();
+            drawBubbles();
 
-            if (!proving) {
-                // Drawing the user's input with hot pink ink
-                stroke(255, 20, 147); // Hot pink color
-                strokeWeight(4); // Thicker stroke for better visibility
-                noFill();
-                beginShape();
-                for (let i = 0; i < drawing.length; i++) {
-                    vertex(drawing[i].x, drawing[i].y);
-                }
-                endShape();
-            } else {
-                // Showing proof fragments (abstract proof representation)
-                for (let i = 0; i < proofFragments.length; i++) {
-                    fill(proofFragments[i].color);
-                    stroke(255, 20, 147); // Hot pink outline for shimmer effect
-                    strokeWeight(1); // Thinner outline for shimmer
-                    ellipse(proofFragments[i].x, proofFragments[i].y, proofFragments[i].size);
-                    proofFragments[i].move();
-                }
-            }
-
-            // Showing the blockchain blocks visually
-            for (let i = 0; i < blocks.length; i++) {
-                blocks[i].show();
-            }
-
-            // Show the hash text if generated
-            if (cryptographicHash) {
-                document.getElementById('hashText').innerText = "Cryptographic Hash: " + cryptographicHash;
-                document.getElementById('hashText').style.display = 'block'; // Show hash text
+            // Display the hash at the bottom
+            if (hashOutput) {
+                fill(0);
+                textSize(16);
+                textAlign(CENTER);
+                text(hashOutput, width / 2, height - 50);
             }
         }
 
+        function mousePressed() {
+            isDrawing = true;
+            currentPath = [];
+            drawing.push(currentPath);
+        }
+
         function mouseDragged() {
-            if (!proving) {
-                // Capture drawing with stylus input
-                drawing.push(createVector(mouseX, mouseY));
+            if (isDrawing) {
+                let point = createVector(mouseX, mouseY);
+                currentPath.push(point);
+                createBubble(point.x, point.y);
             }
         }
 
         function mouseReleased() {
-            if (!proving && drawing.length > 0) {
-                drawing.push(createVector(mouseX, mouseY));
+            isDrawing = false;
+            if (currentPath.length > 0) {
+                let hash = sha256(JSON.stringify(drawing));
+                hashOutput = hash; // Update hash output
+            }
+        }
+
+        function clearCanvas() {
+            drawing = [];
+            hashOutput = "";
+            bubbles = [];
+        }
+
+        function drawPaths() {
+            noFill();
+            stroke(255, 182, 193); // Light pink
+            strokeWeight(2); // Line weight for drawing
+            for (let path of drawing) {
+                beginShape();
+                for (let pt of path) {
+                    vertex(pt.x, pt.y);
+                }
+                endShape();
+            }
+        }
+
+        function drawBubbles() {
+            for (let bubble of bubbles) {
+                bubble.update();
+                bubble.display();
+            }
+        }
+
+        function createBubble(x, y) {
+            let b = new Bubble(x, y);
+            bubbles.push(b);
+        }
+
+        class Bubble {
+            constructor(x, y) {
+                this.position = createVector(x, y);
+                this.size = random(20, 40);
+                this.holoColor = color(random(255), random(255), random(255), 150); // Holographic effect
+            }
+
+            update() {
+                this.position.x += random(-1, 1);
+                this.position.y += random(-1, 1);
+            }
+
+            display() {
+                strokeWeight(1);
+                stroke(255, 192, 203); // Pink shimmer
+                fill(this.holoColor);
+                beginShape();
+                for (let angle = 0; angle < TWO_PI; angle += PI / 8) {
+                    let x = this.position.x + cos(angle) * this.size;
+                    let y = this.position.y + sin(angle) * this.size;
+                    vertex(x, y);
+                }
+                endShape(CLOSE);
             }
         }
 
         function generateProof() {
             if (drawing.length === 0) {
-                alert("Please draw something before proving.");
+                alert("Draw something first!");
                 return;
             }
-
-            proving = true;
-            proofFragments = [];
-            cryptographicHash = "";
-
-            // Generate a cryptographic hash of the drawing's coordinates
-            const coordinates = drawing.map(p => ({ x: p.x, y: p.y })); // Create a simple array of coordinates
-            let shaObj = new jsSHA("SHA-256", "TEXT");
-            shaObj.update(JSON.stringify(coordinates));
-            cryptographicHash = shaObj.getHash("HEX");
-
-            // Create a new block in the blockchain
-            let newBlock = {
-                hash: cryptographicHash,
-                prevHash: blocks.length > 0 ? blocks[blocks.length - 1].hash : "Genesis Block",
-                x: 200 + blocks.length * 150,
-                y: height / 2,
-                color: color(random(100, 255), random(100, 255), random(100, 255)),
-                show: function () {
-                    fill(this.color);
-                    rect(this.x, this.y, 120, 50);
-                    fill(0);
-                    text(`Hash: ${this.hash.substring(0, 8)}`, this.x + 60, this.y + 25);
-                }
-            };
-            blocks.push(newBlock);
-
-            // Generate proof fragments for visual representation
-            let numFragments = 150;
-            for (let i = 0; i < numFragments; i++) {
-                let index = int(random(drawing.length));
-                let fragment = {
-                    x: drawing[index].x + random(-20, 20),
-                    y: drawing[index].y + random(-20, 20),
-                    size: random(10, 50),
-                    color: color(random(100, 255), random(100, 255), random(100, 255), 150),
-                    move: function () {
-                        this.x += random(-1, 1);
-                        this.y += random(-1, 1);
-                    }
-                };
-                proofFragments.push(fragment);
-            }
-
-            // Notify the user without extra text
-            setTimeout(() => {
-                alert("Your proof is ready! Hash: " + cryptographicHash);
-            }, 1000);
-        }
-
-        function resetCanvas() {
-            proving = false;
-            drawing = [];
-            proofFragments = [];
-            blocks = [];
-            cryptographicHash = ""; // Reset the hash
-            document.getElementById('hashText').innerText = ""; // Clear hash text
-            document.getElementById('hashText').style.display = 'none'; // Hide hash text
-            background(250, 250, 245);
+            let hash = sha256(JSON.stringify(drawing));
+            alert("Proof is ready!");
+            console.log("Generated Hash: ", hash);
         }
 
         function windowResized() {
